@@ -1,6 +1,7 @@
 #import "FlutterRingtonePlayerPlugin.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 @interface FlutterRingtonePlayerPlugin()<AVAudioPlayerDelegate>
 
@@ -19,11 +20,27 @@ AVAudioPlayer *audioPlayer;
     [registrar addMethodCallDelegate:instance channel:channel];
 }
 
+- (void) increaseVolume {
+    MPVolumeView *volumeView = [[MPVolumeView alloc] init];
+      UISlider *volumeViewSlider = nil;
+
+      for (UIView *view in volumeView.subviews) {
+        if ([view isKindOfClass:[UISlider class]]) {
+          volumeViewSlider = (UISlider *)view;
+          break;
+        }
+      }
+
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        volumeViewSlider.value = 1.0f;
+      });
+}
+
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-    if ([@"play" isEqualToString:call.method]) {        
+    if ([@"play" isEqualToString:call.method]) {
         SystemSoundID soundId = nil;
         CFURLRef soundFileURLRef = nil;
-        NSLog(@"content: %@", call.arguments);
+        // NSLog(@"content: %@", call.arguments);
         if (call.arguments[@"uri"] != nil) {
             NSString *key = [pluginRegistrar lookupKeyForAsset:call.arguments[@"uri"]];
             NSURL *path = [[NSBundle mainBundle] URLForResource:key withExtension:nil];
@@ -34,9 +51,16 @@ AVAudioPlayer *audioPlayer;
             if (error != nil) {
                 NSLog(@"AVAudioPlayer error: %@", [error localizedDescription]);
             } else {
+                
+                //vibrate phone first
+                [self increaseVolume];
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+                AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
+                
+                // Play sound
                 audioPlayer.numberOfLoops = 1;
+                audioPlayer.volume = 1.0;
                 audioPlayer.delegate = self;
-                [audioPlayer setVolume:1.0];
                 [audioPlayer prepareToPlay];
                 [audioPlayer play];
             }
