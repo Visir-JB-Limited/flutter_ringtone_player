@@ -52,13 +52,24 @@ AVAudioPlayer *audioPlayer;
                 NSLog(@"AVAudioPlayer error: %@", [error localizedDescription]);
             } else {
                 
+                // Setting sound
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    // NSLog(@"userNotificationCenter willPresentNotification");
+                    NSError *error = nil;
+                    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker|AVAudioSessionCategoryOptionDuckOthers error:&error];
+                    [[AVAudioSession sharedInstance] setActive:TRUE error:&error];
+                    if (nil != error) {
+                        NSLog(@"%@", [error localizedDescription]);
+                    }
+                });
+                
                 //vibrate phone first
                 [self increaseVolume];
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
                 AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
                 
                 // Play sound
-                audioPlayer.numberOfLoops = 1;
+                audioPlayer.numberOfLoops = 0;
                 audioPlayer.volume = 1.0;
                 audioPlayer.delegate = self;
                 [audioPlayer prepareToPlay];
@@ -85,7 +96,14 @@ AVAudioPlayer *audioPlayer;
 }
 
 -(void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
-    NSLog(@"%d",flag);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // NSLog(@"userNotificationCenter willPresentNotification");
+        NSError *error = nil;
+        [[AVAudioSession sharedInstance] setActive:FALSE error:&error];
+        if (nil != error) {
+            NSLog(@"%@", [error localizedDescription]);
+        }
+    });
 }
 
 @end
