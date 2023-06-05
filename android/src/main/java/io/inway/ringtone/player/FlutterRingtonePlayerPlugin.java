@@ -117,8 +117,15 @@ public class FlutterRingtonePlayerPlugin implements MethodCallHandler, FlutterPl
                        https://developer.android.com/reference/android/media/Ringtone
                     */
                     if (asAlarm) {
+                        // on below line setting stream volume.
+                        am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
                         ringtone.setStreamType(AudioManager.STREAM_ALARM);
+                    } else {
+                        am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, am.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION), 0);
                     }
+                } else {
+                    // on below line setting stream volume.
+                    am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, am.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION), 0);
                 }
 
                 ringtone.play();
