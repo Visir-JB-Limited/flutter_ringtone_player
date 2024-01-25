@@ -107,6 +107,9 @@ public class FlutterRingtonePlayerPlugin implements MethodCallHandler, FlutterPl
                     }
                 }
 
+                // on below line creating and initializing variable for audio manager.
+                AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
                 if (call.hasArgument("asAlarm")) {
                     final boolean asAlarm = call.argument("asAlarm");
                     /* There's also a .setAudioAttributes method
